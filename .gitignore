@@ -1,3 +1,7 @@
+deploy.sh
+orderservice
+.vscode
+coverage
 # Binaries for programs and plugins
 *.exe
 *.exe~
