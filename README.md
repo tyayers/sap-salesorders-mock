@@ -10,8 +10,10 @@ To deploy either clone and build the docker image yourself, or just click this b
 
 To build and run locally using docker:
 
-```docker build -t local/sap-orders-mock .
-```docker run -p 8080:8080 local/sap-orders-mock
+```
+docker build -t local/sap-orders-mock .
+docker run -p 8080:8080 local/sap-orders-mock
+```
 
 # Test
 
