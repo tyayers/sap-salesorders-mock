@@ -8,10 +8,17 @@ To deploy either clone and build the docker image yourself, or just click this b
 
 [![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run)
 
+To build and run locally using docker:
+
+`docker build -t local/sap-orders-mock .
+docker run -p 8080:8080 local/sap-orders-mock`
+
 # Test
 
-To test your deployment simply run this command to do a GET and return 5 test data records with the endpoint returned by the deployment above.
-
+To test on Cloud Run, call this endpoint:
 `curl [YOUR_CLOUDRUN_ENDPOINT]/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder`
+
+To test locally, call this endpoint:
+`curl http://localhost:8080/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder`
 
 You should get a lot of SalesOrders returned.  You can also POST new records to the endpoint, which will be persisted in memory until the Cloud Run instance is scaled down.
