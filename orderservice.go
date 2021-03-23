@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type SalesOrdersResponse struct {
@@ -356,11 +357,41 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		r := SalesOrdersResponse{D: SalesOrders{Results: orderCol}}
-		SetResponseDefaults(&r)
-		j, _ := json.Marshal(r)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(j)
+		filterProp := "none"
+		filterValue := "none"
+
+		for k, v := range r.URL.Query() {
+			if k == "$filter" {
+				log.Println("request filter: " + v[0])
+				filterProp = v[0][0:strings.Index(v[0], "eq")]
+				log.Println("request filter prop: " + filterProp)
+				filterValue = v[0][strings.Index(v[0], "'") + 1: strings.LastIndex(v[0], "'")]
+				log.Println("request filter prop value: " + filterValue)
+			}
+    }
+
+		if filterProp != "none" {
+			resp := SalesOrderResponse{}
+
+			for i := 0; i < len(orderCol); i++ {
+				if orderCol[i].SalesOrder == filterValue {
+					resp.D = orderCol[i]
+					SetSingleResponseDefaults(&resp)
+					j, _ := json.Marshal(resp)
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(http.StatusCreated)
+					w.Write(j)
+
+					break
+				}
+			}
+		} else {
+			resp := SalesOrdersResponse{D: SalesOrders{Results: orderCol}}
+			SetResponseDefaults(&resp)
+			j, _ := json.Marshal(resp)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(j)
+		}
 	case "POST":
 		d := json.NewDecoder(r.Body)
 		p := &SalesOrder{}
@@ -369,11 +400,11 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		r := SalesOrderResponse{D: *p}
-		SetSingleResponseDefaults(&r)
+		resp := SalesOrderResponse{D: *p}
+		SetSingleResponseDefaults(&resp)
 		orderCol = append(orderCol, *p)
 
-		j, _ := json.Marshal(r)
+		j, _ := json.Marshal(resp)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		w.Write(j)
