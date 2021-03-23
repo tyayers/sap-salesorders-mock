@@ -8,6 +8,10 @@ To deploy either clone and build the docker image yourself, or just click this b
 
 [![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run)
 
+To run locally using GO:
+
+`go run orderservice.go`
+
 To build and run locally using docker:
 
 ```
