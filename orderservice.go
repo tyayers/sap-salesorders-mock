@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
+	"sort"
 	"net/http"
 	"strconv"
 	"strings"
@@ -137,6 +139,7 @@ var orderCol []SalesOrder = []SalesOrder{
 		TransactionCurrency:   "USD",
 		PricingDate:           "1/2/2021",
 		RequestedDeliveryDate: "3/31/2021",
+		OverallTotalDeliveryStatus: "DELIVERED",
 	},
 	{
 		SalesOrder:            "9000000158",
@@ -156,6 +159,7 @@ var orderCol []SalesOrder = []SalesOrder{
 		TransactionCurrency:   "USD",
 		PricingDate:           "2/11/2021",
 		RequestedDeliveryDate: "7/1/2021",
+		OverallTotalDeliveryStatus: "DELIVERED",
 	},
 	{
 		SalesOrder:            "9000000173",
@@ -175,6 +179,7 @@ var orderCol []SalesOrder = []SalesOrder{
 		TransactionCurrency:   "USD",
 		PricingDate:           "12/29/2020",
 		RequestedDeliveryDate: "4/16/2021",
+		OverallTotalDeliveryStatus: "DELIVERED",
 	},
 	{
 		SalesOrder:            "9000000253",
@@ -333,11 +338,28 @@ func SetOrderDefaults(o *SalesOrder, i int) {
 		o.DistributionChannel = "10"
 	}
 
-	o.RequestedDeliveryDate = "2021-04-24T11:20:58+00:00"
+	if o.SalesOrderDate == "" {
+		newDate := time.Now()
+		o.SalesOrderDate = newDate.Format("1/2/2006")
+		o.CreationDate = newDate.Format("1/2/2006")
+	}
 
-	if i == 0 {
+	if o.RequestedDeliveryDate == "" {
+		tempDate,_ := time.Parse("1/2/2006", o.SalesOrderDate)
+		o.RequestedDeliveryDate = tempDate.Add(time.Hour * 24 * 4).Format("1/2/2006")
+	}
+	
+	if o.CreatedByUser == "" {
+		o.CreatedByUser = "WHO_KNOWS"
+	}
+
+	if o.TotalNetAmount == "" {
+		o.TotalNetAmount = "0.00"
+	}
+
+	if i == 0 && o.OverallTotalDeliveryStatus == "" {
 		o.OverallTotalDeliveryStatus = "SCHEDULED"
-	} else {
+	} else if o.OverallTotalDeliveryStatus == "" {
 		o.OverallTotalDeliveryStatus = "FULFILLMENT"
 	}
 
@@ -399,10 +421,25 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+		if p.SalesOrderDate == "" {
+			newDate := time.Now()
+			p.SalesOrderDate = newDate.Format("1/2/2006")
+			p.CreationDate = newDate.Format("1/2/2006")
+		}
+		if p.OverallTotalDeliveryStatus == "" {
+			p.OverallTotalDeliveryStatus = "SCHEDULED"
+		}
+		orderCol = append(orderCol, *p)
 
 		resp := SalesOrderResponse{D: *p}
 		SetSingleResponseDefaults(&resp)
-		orderCol = append(orderCol, *p)
+
+		// Do new sort
+		sort.Slice(orderCol, func(i, j int) bool {
+			myDate1,_ := time.Parse("1/2/2006", orderCol[i].SalesOrderDate)
+			myDate2,_ := time.Parse("1/2/2006", orderCol[j].SalesOrderDate)
+			return myDate1.After(myDate2)
+		})
 
 		j, _ := json.Marshal(resp)
 		w.Header().Set("Content-Type", "application/json")
@@ -415,6 +452,14 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	// Do initial sorting of orders
+	sort.Slice(orderCol, func(i, j int) bool {
+		myDate1,_ := time.Parse("1/2/2006", orderCol[i].SalesOrderDate)
+		myDate2,_ := time.Parse("1/2/2006", orderCol[j].SalesOrderDate)
+		return myDate1.After(myDate2)
+	})
+
 	http.HandleFunc("/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder", orderHandler)
 
 	log.Println("Go!")
