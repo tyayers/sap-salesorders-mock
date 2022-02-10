@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
-	"sort"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
+
+type Health struct {
+	Status string `json:"status"`
+}
 
 type SalesOrdersResponse struct {
 	D SalesOrders `json:"d"`
@@ -122,63 +126,63 @@ type Ref struct {
 
 var orderCol []SalesOrder = []SalesOrder{
 	{
-		SalesOrder:            "9000000152",
-		SalesOrderType:        "OR",
-		SalesOrganization:     "US1100",
-		DistributionChannel:   "01",
-		OrganizationDivision:  "01",
-		SalesGroup:            "",
-		SalesOffice:           "",
-		SalesDistrict:         "7",
-		SoldToParty:           "1003766",
-		CreationDate:          "1/2/2021",
-		CreatedByUser:         "LARRY",
-		LastChangeDate:        "",
-		SalesOrderDate:        "12/30/2020",
-		TotalNetAmount:        "245.83",
-		TransactionCurrency:   "USD",
-		PricingDate:           "1/2/2021",
-		RequestedDeliveryDate: "3/31/2021",
+		SalesOrder:                 "9000000152",
+		SalesOrderType:             "OR",
+		SalesOrganization:          "US1100",
+		DistributionChannel:        "01",
+		OrganizationDivision:       "01",
+		SalesGroup:                 "",
+		SalesOffice:                "",
+		SalesDistrict:              "7",
+		SoldToParty:                "1003766",
+		CreationDate:               "1/2/2021",
+		CreatedByUser:              "LARRY",
+		LastChangeDate:             "",
+		SalesOrderDate:             "12/30/2020",
+		TotalNetAmount:             "245.83",
+		TransactionCurrency:        "USD",
+		PricingDate:                "1/2/2021",
+		RequestedDeliveryDate:      "3/31/2021",
 		OverallTotalDeliveryStatus: "DELIVERED",
 	},
 	{
-		SalesOrder:            "9000000158",
-		SalesOrderType:        "OR",
-		SalesOrganization:     "US1100",
-		DistributionChannel:   "01",
-		OrganizationDivision:  "01",
-		SalesGroup:            "",
-		SalesOffice:           "",
-		SalesDistrict:         "",
-		SoldToParty:           "1003765",
-		CreationDate:          "2/11/2021",
-		CreatedByUser:         "LARRY",
-		LastChangeDate:        "",
-		SalesOrderDate:        "2/7/2021",
-		TotalNetAmount:        "901.36",
-		TransactionCurrency:   "USD",
-		PricingDate:           "2/11/2021",
-		RequestedDeliveryDate: "7/1/2021",
+		SalesOrder:                 "9000000158",
+		SalesOrderType:             "OR",
+		SalesOrganization:          "US1100",
+		DistributionChannel:        "01",
+		OrganizationDivision:       "01",
+		SalesGroup:                 "",
+		SalesOffice:                "",
+		SalesDistrict:              "",
+		SoldToParty:                "1003765",
+		CreationDate:               "2/11/2021",
+		CreatedByUser:              "LARRY",
+		LastChangeDate:             "",
+		SalesOrderDate:             "2/7/2021",
+		TotalNetAmount:             "901.36",
+		TransactionCurrency:        "USD",
+		PricingDate:                "2/11/2021",
+		RequestedDeliveryDate:      "7/1/2021",
 		OverallTotalDeliveryStatus: "DELIVERED",
 	},
 	{
-		SalesOrder:            "9000000173",
-		SalesOrderType:        "OR",
-		SalesOrganization:     "US1100",
-		DistributionChannel:   "01",
-		OrganizationDivision:  "",
-		SalesGroup:            "",
-		SalesOffice:           "",
-		SalesDistrict:         "",
-		SoldToParty:           "1003765",
-		CreationDate:          "12/29/2020",
-		CreatedByUser:         "LARRY",
-		LastChangeDate:        "",
-		SalesOrderDate:        "12/29/2020",
-		TotalNetAmount:        "1180.86",
-		TransactionCurrency:   "USD",
-		PricingDate:           "12/29/2020",
-		RequestedDeliveryDate: "4/16/2021",
+		SalesOrder:                 "9000000173",
+		SalesOrderType:             "OR",
+		SalesOrganization:          "US1100",
+		DistributionChannel:        "01",
+		OrganizationDivision:       "",
+		SalesGroup:                 "",
+		SalesOffice:                "",
+		SalesDistrict:              "",
+		SoldToParty:                "1003765",
+		CreationDate:               "12/29/2020",
+		CreatedByUser:              "LARRY",
+		LastChangeDate:             "",
+		SalesOrderDate:             "12/29/2020",
+		TotalNetAmount:             "1180.86",
+		TransactionCurrency:        "USD",
+		PricingDate:                "12/29/2020",
+		RequestedDeliveryDate:      "4/16/2021",
 		OverallTotalDeliveryStatus: "DELIVERED",
 	},
 	{
@@ -345,10 +349,10 @@ func SetOrderDefaults(o *SalesOrder, i int) {
 	}
 
 	if o.RequestedDeliveryDate == "" {
-		tempDate,_ := time.Parse("1/2/2006", o.SalesOrderDate)
+		tempDate, _ := time.Parse("1/2/2006", o.SalesOrderDate)
 		o.RequestedDeliveryDate = tempDate.Add(time.Hour * 24 * 4).Format("1/2/2006")
 	}
-	
+
 	if o.CreatedByUser == "" {
 		o.CreatedByUser = "WHO_KNOWS"
 	}
@@ -387,10 +391,10 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println("request filter: " + v[0])
 				filterProp = v[0][0:strings.Index(v[0], "eq")]
 				log.Println("request filter prop: " + filterProp)
-				filterValue = v[0][strings.Index(v[0], "'") + 1: strings.LastIndex(v[0], "'")]
+				filterValue = v[0][strings.Index(v[0], "'")+1 : strings.LastIndex(v[0], "'")]
 				log.Println("request filter prop value: " + filterValue)
 			}
-    }
+		}
 
 		if filterProp != "none" {
 			resp := SalesOrderResponse{}
@@ -436,8 +440,8 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Do new sort
 		sort.Slice(orderCol, func(i, j int) bool {
-			myDate1,_ := time.Parse("1/2/2006", orderCol[i].SalesOrderDate)
-			myDate2,_ := time.Parse("1/2/2006", orderCol[j].SalesOrderDate)
+			myDate1, _ := time.Parse("1/2/2006", orderCol[i].SalesOrderDate)
+			myDate2, _ := time.Parse("1/2/2006", orderCol[j].SalesOrderDate)
 			return myDate1.After(myDate2)
 		})
 
@@ -451,16 +455,28 @@ func orderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case "GET":
+		resp := Health{Status: "Ok"}
+		j, _ := json.Marshal(resp)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(j)
+	}
+}
+
 func main() {
 
 	// Do initial sorting of orders
 	sort.Slice(orderCol, func(i, j int) bool {
-		myDate1,_ := time.Parse("1/2/2006", orderCol[i].SalesOrderDate)
-		myDate2,_ := time.Parse("1/2/2006", orderCol[j].SalesOrderDate)
+		myDate1, _ := time.Parse("1/2/2006", orderCol[i].SalesOrderDate)
+		myDate2, _ := time.Parse("1/2/2006", orderCol[j].SalesOrderDate)
 		return myDate1.After(myDate2)
 	})
 
 	http.HandleFunc("/sap/opu/odata/sap/API_SALES_ORDER_SRV/A_SalesOrder", orderHandler)
+	http.HandleFunc("/", healthHandler)
 
 	log.Println("Go!")
 	http.ListenAndServe(":8080", nil)
